@@ -11,4 +11,5 @@ COPY . .
 RUN npx prisma generate --schema=/app/prisma/schema.prisma
 
 EXPOSE 4001
-CMD ["npm", "run", "dev"]
+# Lance directement Node en PID 1 pour recevoir SIGTERM/SIGINT proprement.
+CMD ["node", "src/server.js"]

@@ -1,39 +1,39 @@
-const express = require("express");
-const cors = require("cors");
-const { PrismaClient } = require("@prisma/client");
+const { prisma } = require("./db/prismaClient");
+const { buildApp } = require("./app");
 
-const app = express();
-const prisma = new PrismaClient();
+// Lit le port depuis l'environnement avec fallback local.
+const port = Number(process.env.PORT || 4001);
 
-app.use(cors());
-app.use(express.json());
+// Construit l'app en injectant les dependances.
+const app = buildApp({ prisma });
 
-app.get("/health", (_req, res) => {
-  res.json({ service: "profile-service", status: "OK" });
+// Demarre le serveur HTTP et conserve la reference pour le fermer proprement.
+const server = app.listen(port, () => {
+  console.log(`profile-service listening on port ${port}`);
 });
 
-app.post("/profiles", async (req, res) => {
-  try {
-    const { fullName, title } = req.body || {};
-    if (!fullName || fullName.trim().length < 2) {
-      return res.status(400).json({ error: "fullName invalide" });
+// Gère un arrêt gracieux: stop HTTP puis ferme Prisma.
+async function shutdown(signal) {
+  console.log(`received ${signal}, starting graceful shutdown`);
+
+  // N'accepte plus de nouvelles connexions, puis ferme la DB.
+  server.close(async () => {
+    try {
+      await prisma.$disconnect();
+      console.log("prisma disconnected");
+      process.exit(0);
+    } catch (error) {
+      console.error("shutdown error:", error);
+      process.exit(1);
     }
+  });
+}
 
-    const profile = await prisma.profile.create({
-      data: {
-        fullName: fullName.trim(),
-        title: title ?? null,
-      },
-    });
-
-    return res.status(201).json(profile);
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ error: "internal_error", details: String(error) });
-  }
+// Intercepte Ctrl+C et arrêt Docker pour fermer proprement l'application.
+process.once("SIGINT", () => {
+  shutdown("SIGINT");
 });
 
-app.listen(4001, () => {
-  console.log("profile-service listening on port 4001");
+process.once("SIGTERM", () => {
+  shutdown("SIGTERM");
 });

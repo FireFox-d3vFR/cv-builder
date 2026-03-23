@@ -15,5 +15,8 @@
     "apps/*",
     "services/*",
     "packages/*"
-  ]
+  ],
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  }
 }

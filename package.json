@@ -1,22 +1,17 @@
 {
   "name": "cv-builder",
+  "private": true,
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "private": "true",
   "workspaces": [
     "apps/*",
     "services/*",
     "packages/*"
   ],
-  "devDependencies": {
-    "prisma": "^5.22.0"
+  "scripts": {
+    "dev:web": "npm run dev -w @cv-builder/web",
+    "dev:profile-service": "npm run dev -w @cv-builder/profile-service",
+    "build:web": "npm run build -w @cv-builder/web",
+    "db:push": "npm run db:push -w @cv-builder/profile-service",
+    "db:generate": "npm run db:generate -w @cv-builder/profile-service"
   }
 }

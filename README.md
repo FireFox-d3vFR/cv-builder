@@ -58,6 +58,23 @@ Vérifier les conteneurs:
 docker compose ps
 ```
 
+Le projet est actuellement pensé pour un usage `full Docker`:
+- frontend web disponible sur `http://localhost:3000`
+- API `profile-service` disponible sur `http://localhost:4001`
+- communication inter-conteneurs via les noms de services Docker (`profile-service`, `postgres`)
+
+Important pour le frontend:
+- en mode `full Docker`, `NEXT_PUBLIC_PROFILE_API_URL` doit pointer vers `http://profile-service:4001`
+- `http://localhost:4001` fonctionne depuis ton navigateur ou ta machine hôte, mais pas depuis le conteneur `web`
+- si tu as exporté `NEXT_PUBLIC_PROFILE_API_URL` dans ton shell, cette valeur peut écraser celle de `.env`
+- en cas de doute, réinitialiser la variable avant un redémarrage Compose:
+
+```bash
+unset NEXT_PUBLIC_PROFILE_API_URL
+docker compose down
+docker compose up -d --build
+```
+
 ## Prisma (profile-service)
 
 Appliquer le schéma en base:
@@ -96,6 +113,7 @@ Content-Type: application/json
 
 - `profile-service` utilise `node:20-bookworm-slim` (compatibilité Prisma/OpenSSL).
 - Le `Dockerfile` de `profile-service` exécute `prisma generate` au build.
+- `docker-compose.yml` inclut des `healthcheck` pour `postgres`, `profile-service` et `web`.
 - Les credentials Postgres doivent être alignés entre:
     - `service.postgres` (`POSTGRES_USER`, `POSTGRES_PASSWORD`)
     - `profile-service` (`DATABASE_URL`)
@@ -103,6 +121,13 @@ Content-Type: application/json
 ```bash
 docker compose down -v
 docker compose up -d --build
+```
+
+Vérifications utiles:
+```bash
+docker compose logs web --tail=100
+docker compose logs profile-service --tail=100
+curl http://localhost:4001/health
 ```
 
 ## Convention de code

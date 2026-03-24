@@ -8,8 +8,56 @@ datasource db {
 }
 
 model Profile {
-    id          String  @id @default(cuid())
+    id          String       @id @default(cuid())
     fullName    String
     title       String?
+    createdAt   DateTime     @default(now())
+    experiences Experience[]
+    educations  Education[]
+    skills      Skill[]
+}
+
+model Experience {
+    id          String   @id @default(cuid())
+    profileId   String
+    company     String
+    role        String
+    summary     String?
+    startDate   DateTime?
+    endDate     DateTime?
+    isCurrent   Boolean  @default(false)
     createdAt   DateTime @default(now())
+    profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+    @@index([profileId])
+    @@index([createdAt])
+}
+
+model Education {
+    id            String   @id @default(cuid())
+    profileId     String
+    school        String
+    degree        String
+    fieldOfStudy  String?
+    description   String?
+    startDate     DateTime?
+    endDate       DateTime?
+    createdAt     DateTime @default(now())
+    profile       Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+    @@index([profileId])
+    @@index([createdAt])
+}
+
+model Skill {
+    id          String   @id @default(cuid())
+    profileId   String
+    name        String
+    category    String?
+    level       String?
+    createdAt   DateTime @default(now())
+    profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+    @@index([profileId])
+    @@index([createdAt])
 }

@@ -1,20 +1,11 @@
-const { z } = require("zod");
+const { createEducationInputSchema } = require("@cv-builder/schemas");
 const { HttpError } = require("../errors/httpError");
 const { getProfileOrThrow } = require("./getProfileOrThrow");
-
-const educationInputSchema = z.object({
-  school: z.string().trim().min(1, "school est requis"),
-  degree: z.string().trim().min(1, "degree est requis"),
-  fieldOfStudy: z.string().trim().min(1).optional().nullable(),
-  description: z.string().trim().min(1).optional().nullable(),
-  startDate: z.coerce.date().optional().nullable(),
-  endDate: z.coerce.date().optional().nullable(),
-});
 
 async function createEducation({ prisma, profileId, input }) {
   await getProfileOrThrow({ prisma, profileId });
 
-  const parsed = educationInputSchema.parse(input);
+  const parsed = createEducationInputSchema.parse(input);
 
   if (parsed.startDate && parsed.endDate && parsed.endDate < parsed.startDate) {
     throw new HttpError({

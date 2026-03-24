@@ -1,20 +1,11 @@
-const { z } = require("zod");
+const { createExperienceInputSchema } = require("@cv-builder/schemas");
 const { HttpError } = require("../errors/httpError");
 const { getProfileOrThrow } = require("./getProfileOrThrow");
-
-const experienceInputSchema = z.object({
-  company: z.string().trim().min(1, "company est requis"),
-  role: z.string().trim().min(1, "role est requis"),
-  summary: z.string().trim().min(1).optional().nullable(),
-  startDate: z.coerce.date().optional().nullable(),
-  endDate: z.coerce.date().optional().nullable(),
-  isCurrent: z.boolean().optional().default(false),
-});
 
 async function createExperience({ prisma, profileId, input }) {
   await getProfileOrThrow({ prisma, profileId });
 
-  const parsed = experienceInputSchema.parse(input);
+  const parsed = createExperienceInputSchema.parse(input);
 
   if (parsed.isCurrent && parsed.endDate) {
     throw new HttpError({
@@ -42,7 +33,7 @@ async function createExperience({ prisma, profileId, input }) {
       summary: parsed.summary ?? null,
       startDate: parsed.startDate ?? null,
       endDate: parsed.endDate ?? null,
-      isCurrent: parsed.isCurrent,
+      isCurrent: parsed.isCurrent ?? false,
     },
   });
 }

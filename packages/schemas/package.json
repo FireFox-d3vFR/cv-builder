@@ -2,5 +2,9 @@
   "name": "@cv-builder/schemas",
   "private": true,
   "version": "1.0.0",
-  "type": "commonjs"
+  "main": "index.js",
+  "type": "commonjs",
+  "dependencies": {
+    "zod": "^4.3.6"
+  }
 }
